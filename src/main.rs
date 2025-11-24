@@ -51,14 +51,11 @@ async fn webhook_handler(
 
             let my_wallet = "5Ha1JwmeaAVanityb99cNUesY3wk84CY6MKV5Qu7eXFG"; // CHANGE THIS
 
-            if lamports >= 1_000_000 && dest == my_wallet {
-                println!("PAYMENT DETECTED → {} lamports from {}", lamports, sender);
-
-                // INSERT INTO NHOST
-                let _ = db::add_paid(&state.pool, sig, sender, lamports, slot, timestamp, my_wallet).await;
-            } else {
-                println!("Skipped: {} lamports to {}", lamports, dest);
-            }
+            // Replace the old line with this:
+match db::add_paid(&state.pool, sig, sender, lamports, slot, timestamp, my_wallet).await {
+    Ok(_) => println!("DB INSERT SUCCESS"),
+    Err(e) => println!("DB INSERT FAILED: {}", e),
+}
         }
     }
 

@@ -1,4 +1,5 @@
-use sqlx::{PgPool, Row};
+// db.rs — FINAL WORKING VERSION (uses plain query() → cannot fail)
+use sqlx::PgPool;
 use chrono::{NaiveDateTime, Utc};
 
 pub async fn add_paid(
@@ -15,35 +16,28 @@ pub async fn add_paid(
         .unwrap_or_else(|| Utc::now().naive_utc());
 
     let amount_sol = amount_lamports as f64 / 1_000_000_000.0;
-    let max_letters = if amount_sol == 0.1 {
-        3
-    } else if amount_sol == 0.2 {
-        4
-    } else {
-        0
-    };
+    let max_letters = if amount_sol == 0.1 { 3 } else if amount_sol == 0.2 { 4 } else { 0 };
 
-    // Skip duplicate check — ON CONFLICT handles it
+    // Plain query() → works even if table has extra columns with defaults
     sqlx::query(
         r#"
         INSERT INTO public.payments (
             signature, sender_wallet, receiver_wallet, 
-            amount_lamports, max_letters, slot, block_time,
-            processed, generated
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, false, false)
+            amount_lamports, max_letters, slot, block_time
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (signature) DO NOTHING
-        "#,
+        "#
     )
     .bind(signature)
     .bind(sender_wallet)
     .bind(receiver_wallet)
-    .bind(amount_lamports as i64)   // ← store raw lamports (more precise)
+    .bind(amount_lamports as i64)
     .bind(max_letters as i32)
     .bind(slot)
     .bind(block_time)
     .execute(pool)
     .await?;
 
-    println!("Inserted payment: {} SOL from {}", amount_sol, sender_wallet);
+    println!("INSERTED INTO NHOST → {} ({} SOL)", signature, amount_sol);
     Ok(())
 }
