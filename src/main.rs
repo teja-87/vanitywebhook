@@ -49,7 +49,7 @@ async fn webhook_handler(
             let timestamp = event["timestamp"].as_i64();
             let dest = event["destination"].as_str().unwrap_or("");
 
-            let my_wallet = "YOUR_WALLET_PUBKEY_HERE"; // CHANGE THIS
+            let my_wallet = "5Ha1JwmeaAVanityb99cNUesY3wk84CY6MKV5Qu7eXFG"; // CHANGE THIS
 
             if lamports >= 1_000_000 && dest == my_wallet {
                 println!("PAYMENT DETECTED → {} lamports from {}", lamports, sender);
